@@ -1,29 +1,28 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
 import smtplib
+import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'zaki-portfolio-secret-2025'
+# Secret key ko secure rakhein
+app.secret_key = os.environ.get('SECRET_KEY', 'zaki-portfolio-secret-2025')
 
 # ============================================================
-#   SIRF YAHAN APNI DETAILS BHARO — BAKI KUCH MAT CHHUAO
+#  SIRF YAHAN APNI DETAILS BHARO — BAKI KUCH MAT CHHUAO
 # ============================================================
 SENDER_EMAIL    = "zakiulhusnain37405@gmail.com"   # Tumhari Gmail
 SENDER_PASSWORD = "yyrh axcv ldvs edwv"            # Gmail App Password (16 digits)
 RECEIVER_EMAIL  = "zakiulhusnain37405@gmail.com"   # Jahan mail aani chahiye
 # ============================================================
 
-
 @app.route('/')
 def home():
     return render_template('index.html')
 
-
 @app.route('/contact', methods=['POST'])
 def contact():
-
     name         = request.form.get('name', '').strip()
     email        = request.form.get('email', '').strip()
     subject      = request.form.get('subject', '').strip()
@@ -41,14 +40,12 @@ def contact():
     <body style="font-family:Arial,sans-serif;background:#f5f7fa;padding:30px;">
       <div style="max-width:580px;margin:0 auto;background:#fff;border-radius:12px;
                   box-shadow:0 4px 20px rgba(0,0,0,0.08);overflow:hidden;">
-
         <div style="background:#00a86b;padding:28px 32px;">
           <h2 style="color:#fff;margin:0;font-size:20px;">New Project Inquiry</h2>
           <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">
             Portfolio Contact Form &mdash; {timestamp}
           </p>
         </div>
-
         <div style="padding:32px;">
           <table style="width:100%;border-collapse:collapse;font-size:14px;">
             <tr>
@@ -79,33 +76,20 @@ def contact():
               </td>
             </tr>
           </table>
-
-          <div style="margin-top:24px;background:#f5f7fa;border-left:4px solid #00a86b;
-                      padding:18px 20px;">
-            <p style="margin:0 0 8px;font-weight:600;color:#111827;font-size:13px;">
-              Message / Project Details
-            </p>
-            <p style="margin:0;color:#374151;font-size:14px;line-height:1.8;
-                      white-space:pre-wrap;">{message}</p>
+          <div style="margin-top:24px;background:#f5f7fa;border-left:4px solid #00a86b;padding:18px 20px;">
+            <p style="margin:0 0 8px;font-weight:600;color:#111827;font-size:13px;">Message / Project Details</p>
+            <p style="margin:0;color:#374151;font-size:14px;line-height:1.8;white-space:pre-wrap;">{message}</p>
           </div>
-
           <div style="margin-top:28px;text-align:center;">
             <a href="mailto:{email}?subject=Re: {subject}"
-               style="display:inline-block;background:#00a86b;color:#fff;
-                      padding:13px 32px;border-radius:50px;font-size:14px;
-                      font-weight:600;text-decoration:none;">
+               style="display:inline-block;background:#00a86b;color:#fff;padding:13px 32px;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;">
               Reply to {name} &rarr;
             </a>
           </div>
         </div>
-
-        <div style="background:#f9fafb;padding:16px 32px;text-align:center;
-                    border-top:1px solid #e5e7eb;">
-          <p style="margin:0;color:#9ca3af;font-size:12px;">
-            Sent via Zaki Ul Husnain's Portfolio Website
-          </p>
+        <div style="background:#f9fafb;padding:16px 32px;text-align:center;border-top:1px solid #e5e7eb;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">Sent via Zaki Ul Husnain's Portfolio Website</p>
         </div>
-
       </div>
     </body>
     </html>
@@ -118,18 +102,21 @@ def contact():
         msg['Subject'] = f"[Portfolio] {subject} — {name}"
         msg.attach(MIMEText(html_body, 'html'))
 
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        # YAHAN CHANGE KIYA HAI: Port 587 (TLS) use kar rahe hain jo Render par block nahi hoti
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()  # Secure connection start karein
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+        server.quit()
 
         flash('success', 'success')
-
     except Exception as e:
         print(f"Email error: {e}")
         flash('error', 'error')
 
     return redirect(url_for('home') + '#contact')
 
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Render dynamic port provide karta hai, isliye yeh bind hona zaroori hai
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
