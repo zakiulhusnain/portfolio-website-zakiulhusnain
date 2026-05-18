@@ -12,9 +12,9 @@ app.secret_key = os.environ.get('SECRET_KEY', 'zaki-portfolio-secret-2025')
 # ============================================================
 #  SIRF YAHAN APNI DETAILS BHARO — BAKI KUCH MAT CHHUAO
 # ============================================================
-SENDER_EMAIL    = "zakiulhusnain37405@gmail.com"   # Tumhari Gmail
-SENDER_PASSWORD = "yyrh axcv ldvs edwv"            # Gmail App Password (16 digits)
-RECEIVER_EMAIL  = "zakiulhusnain37405@gmail.com"   # Jahan mail aani chahiye
+SENDER_EMAIL    = os.environ.get('MAIL_USERNAME', 'zakiulhusnain37405@gmail.com')
+SENDER_PASSWORD = os.environ.get('MAIL_PASSWORD')  # Yeh dashboard se key uthaye ga
+RECEIVER_EMAIL  = os.environ.get('RECEIVER_EMAIL', 'zakiulhusnain37405@gmail.com')
 # ============================================================
 
 @app.route('/')
