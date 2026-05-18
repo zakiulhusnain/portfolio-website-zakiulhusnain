@@ -2,7 +2,8 @@
 const menuIcon = document.getElementById('menu-icon');
 const navbar = document.getElementById('navbar');
 
-menuIcon.addEventListener('click', () => {
+menuIcon.addEventListener('click', (e) => {
+    e.stopPropagation();
     navbar.classList.toggle('open');
 });
 
@@ -11,6 +12,13 @@ navbar.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
         navbar.classList.remove('open');
     });
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    if (!navbar.contains(e.target) && !menuIcon.contains(e.target)) {
+        navbar.classList.remove('open');
+    }
 });
 
 // ========== HEADER SCROLL EFFECT ==========
@@ -22,8 +30,6 @@ window.addEventListener('scroll', () => {
     } else {
         header.classList.remove('scrolled');
     }
-
-    // Active nav link
     updateActiveNav();
 });
 
@@ -37,7 +43,6 @@ function updateActiveNav() {
     sections.forEach(section => {
         const sectionTop = section.offsetTop - 100;
         const sectionHeight = section.offsetHeight;
-
         if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
             current = section.getAttribute('id');
         }
@@ -53,7 +58,7 @@ function updateActiveNav() {
 
 // ========== SCROLL REVEAL ANIMATIONS ==========
 const fadeEls = document.querySelectorAll(
-    '.skill-card, .project-card, .service-card, .about-content, .contact-container'
+    '.skill-card, .project-card, .service-card, .about-content, .contact-wrapper'
 );
 
 fadeEls.forEach(el => {
